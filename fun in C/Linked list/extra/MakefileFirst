@@ -1,0 +1,18 @@
+file=main
+inputc = listFunctions.c queueStackFunctions.c
+inputh = headerCommands.h headerStruct.h
+CFLAGS=-Wall
+LDLIBS=-lm
+
+$(file): $(inputc) $(inputh) $(file).c
+	gcc $(CFLAGS) $(LDLIBS) $(inputc) $(file).c -o $(file)
+
+test: test.o
+
+.PHONY: clean
+clean:
+	-$(RM) $(file)
+
+.PHONY: run
+run: $(file)
+	./$(file)
