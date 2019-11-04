@@ -1,0 +1,19 @@
+Time key1: 0
+Keys tested: 1023
+Keys pr sec: inf
+
+Longest probe length: 6
+Used keys: 1023
+Prediction: 1023
+
+Zero probe length: 532
+      Mean probe length: 0.785
+Var probe length: 1.076
+
+Failed to find key
+Cleanup started
+
+Time key2: 0
+Keys tested: 1023
+Keys pr sec: inf
+    Non zero pl test: 0
