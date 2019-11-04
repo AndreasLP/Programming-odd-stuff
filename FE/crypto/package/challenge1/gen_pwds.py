@@ -8,12 +8,12 @@ Provide source code to decrypt file.enc.
 """
 
 import sys
-import psw_dec
+import psw_enc
 
 
 class PWDGen:
     def __init__(self, init = '\00'*16):
-        self.mod = psw_dec.CryptoModule(init)
+        self.mod = psw_enc.CryptoModule(init)
         self.words = ["foo", "bar", "ba", "er", "de", "dam", "food", "slam"]
         
     def getNext(self):
