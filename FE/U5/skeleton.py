@@ -37,7 +37,7 @@ class U5(object):
     self.run()
 
   def run(self):
-    while self.spin():
+    while self.spin:
       pass
 
   def disk_seek(self, sector):
@@ -53,6 +53,7 @@ class U5(object):
   def disk_write(self, addr, sector):
     # TODO: ...
 
+  @property
   def spin(self):
     pc = self.regs[REG_PC]
     assert pc % 4 == 0, 'alignment error (PC)'
@@ -83,7 +84,7 @@ class U5(object):
     # All other instructions follow the same format
     else:
       if op == OP_HALT:
-        print >>sys.stderr, 'HALTed'
+        print(sys.stderr, 'HALTed')
         # Stop execution
         return False
       # TODO: ...

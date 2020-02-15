@@ -17,16 +17,16 @@ from heapq import heappush, heappop, heapify
 
 def die(msg = '', status = 1):
     if msg:
-        print >>sys.stderr, msg
+        print(sys.stderr, msg)
     sys.exit(status)
 
 VERBOSE = False
 def log(msg):
     if VERBOSE:
-        print >>sys.stderr, msg
+        print(sys.stderr, msg)
 
 def warn(msg):
-    print >>sys.stderr, '\x1b[31m%s\x1b[m' % msg
+    print(sys.stderr, '\x1b[31m%s\x1b[m' % msg
 
 def crc32(data):
     return zlib.crc32(data) & 0xffffffff
