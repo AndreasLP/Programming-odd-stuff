@@ -35,12 +35,12 @@ static inline uint64_t hash_with_probe(uint64_t key, int probe);
 
 void statistics(uint64_t * middle, int64_t * pl, uint64_t limit);
 
-void insert(uint64_t * middle, int64_t * pl, uint64_t idx, uint64_t skey);
+void insert(uint64_t * middle, uint64_t * pl, uint64_t idx, uint64_t skey);
 
 int test_keys(uint64_t *pskey1, uint64_t *pskey2, 
     DES_key_schedule *pkeysch1, DES_key_schedule *pkeysch2);
 
-int test(uint64_t * middle, int64_t * pl, uint64_t idx, 
+int test(uint64_t * middle, uint64_t * pl, uint64_t idx, 
     uint64_t* pskey2, DES_key_schedule *pkeysch2);
 
 //uint64_t *middle, *pl;
@@ -95,20 +95,20 @@ int main(int argc, char ** argv){
   printf("Limit: %llu\n",limit);
 #endif
 
-  int64_t *middle, *pl;
+  uint64_t *middle, *pl;
 
   uint64_t loop_type = 0;
   if(limit < (1<<28)){
     loop_type = 1;
     table_size = limit<<1;
-    middle = malloc((table_size)*sizeof(uint64_t));
-    pl = malloc((table_size)*sizeof(int64_t));
+    middle = (uint64_t*)malloc((table_size)*sizeof(uint64_t));
+    pl = (uint64_t*)malloc((table_size)*sizeof(int64_t));
   }
   else{
     loop_type = 2;
     table_size = 1<<29;
-    middle = malloc((1<<29)*sizeof(uint64_t));
-    pl = malloc((1<<29)*sizeof(int64_t));
+    middle = (uint64_t*)malloc((1<<29)*sizeof(uint64_t));
+    pl = (uint64_t*)malloc((1<<29)*sizeof(int64_t));
   }
   
   if(middle == NULL || pl == NULL) {
@@ -238,7 +238,7 @@ void statistics(uint64_t * middle, int64_t * pl, uint64_t limit){
 
 };
 
-void insert(uint64_t * middle, int64_t * pl, uint64_t idx, uint64_t skey){
+void insert(uint64_t * middle, uint64_t * pl, uint64_t idx, uint64_t skey){
   uint64_t cpl = 0, tmp_key = 0, tmp_pl = 0, IDX = idx + 1;
   IDX--;
 #ifdef debug
@@ -337,7 +337,7 @@ int test_keys(uint64_t *pskey1, uint64_t *pskey2,
   return 0;
 };
 
-int test(uint64_t * middle, int64_t * pl, uint64_t idx, 
+int test(uint64_t * middle, uint64_t * pl, uint64_t idx, 
     uint64_t *pskey2, DES_key_schedule *pkeysch2){
 
   uint64_t skey1 = 0, *pskey1;

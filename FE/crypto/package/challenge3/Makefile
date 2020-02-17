@@ -1,10 +1,11 @@
-file=exhaustive
+file=sorted_list_MiM
 #input = $(patsubst %.c,%.o,$(wildcard *.c))
-CC=gcc
-CFLAGS=-std=c99 -g -O3
-LDLIBS=-lm -lcrypto
+CC=g++
+CFLAGS=-O3
+LDLIBS=-lm -lcrypto -lssl
 
-$(file): $(file).o #$(input) $(file).o
+$(file): $(file).cpp #$(input) $(file).o
+	g++ $(file).cpp -o $(file) -lm -O3 -lssl -lcrypto 
 
 .PHONY: clean run crun cmake
 clean:

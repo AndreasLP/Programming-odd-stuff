@@ -1,0 +1,11 @@
+l: 31   Rounds: 4
+Time key1: 92.462
+Keys tested: 536870912  Keys pr sec: 5806423.260
+Time sort: 46.285
+Test 1
+Key 1: 000000009260926c
+Key 2: 0000000e103e1038
+Counter: 1
+Time key2: 1018.121
+Keys tested: 1896334363 Keys pr sec: 1862582.421
+
