@@ -3,6 +3,13 @@
   <component name="ChangeListManager">
     <list default="true" id="21196702-b26c-44ad-9cde-13052017553f" name="Default Changelist" comment="">
       <change afterPath="$PROJECT_DIR$/../../../challenge_content/challenge.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../challenge2/file1.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/substitution.py" beforeDir="false" afterPath="$PROJECT_DIR$/substitution.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test_files.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_files.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../challenge2/cipher.py" beforeDir="false" afterPath="$PROJECT_DIR$/../challenge2/cipher.py" afterDir="false" />
@@ -22,7 +29,7 @@
   <component name="ProjectId" id="1ZB005lRwlWlYbUYbviQGb9qgca" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../challenge2" />
+    <property name="last_opened_file_path" value="$USER_HOME$/DTU/BachelorProject/CNN" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">

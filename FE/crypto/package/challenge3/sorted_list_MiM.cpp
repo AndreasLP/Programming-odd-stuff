@@ -11,7 +11,8 @@
 #include<functional>
 #include<math.h>
 
-#define timed
+// #define timed
+// #define output_info
 
 #define min(a,b) \
    ({ __typeof__ (a) _a = (a); \
@@ -68,6 +69,8 @@ KEY_RES *middle;
 long long table_size, idx_cand;
 
 int main(int argc, char ** argv){
+  clock_t START_PROG = clock();
+
   long COUNTER = 0;
   clock_t start_t, end_t; double total_t;
   uint64_t l=0,key1 = 0, key2 = 0, skey1 = 0, skey2 = 0,
@@ -78,8 +81,9 @@ int main(int argc, char ** argv){
   else{
     printf("Syntax: program {l}\n"); return 1;
   };
-  
-  unsigned long long limit = 1<<l, tmp_l = 0, plain = 0, cipher = 0, count = 0;
+
+  unsigned long long limit = ((unsigned long long)1)<<l, 
+                tmp_l = 0, plain = 0, cipher = 0, count = 0;
   unsigned char tmp = 0;
 
   FILE * f = fopen("blocks.txt", "r");
@@ -121,8 +125,9 @@ int main(int argc, char ** argv){
     table_size = 1<<29;
     middle = (KEY_RES*)malloc( table_size *sizeof( KEY_RES ));
   }
+#ifdef output_info
   printf("l: %2ld\tRounds: %ld\n", l, rounds);
-  
+#endif 
   if(middle == NULL) {
     printf("Memory allocation failed\n");
     return 3;
@@ -141,7 +146,11 @@ for(long round = 1; round <= rounds; round++) {
 #ifdef timed
   start_t = clock();
 #endif
-  
+
+#ifdef output_info
+  printf("Round: %ld/%lu\n", round, rounds);
+#endif
+
   key1_limit = round*table_size;
   for(i = 0; key1 < key1_limit; i++, key1++){
     skey1 = __bswap_64(parity(key1));
@@ -217,7 +226,9 @@ for(key2 = 0; key2 <= limit; key2++){
 
   CLEANUP:
 {
+#ifdef output_info
   printf("Counter: %ld\n", COUNTER);
+#endif
 #ifdef timed
   end_t = clock();
   total_t = ((double)(end_t - start_t))/CLOCKS_PER_SEC;
@@ -229,16 +240,22 @@ for(key2 = 0; key2 <= limit; key2++){
 
 
   
+
   free(middle);
+  clock_t END_PROG = clock();
+  double TOTAL_PROG = ((double)(END_PROG - START_PROG))/CLOCKS_PER_SEC;
+#ifdef timed
+  printf("Total program time: %5.3lf\n", TOTAL_PROG);
+#endif
   return 0;
 };
 int counter = 1;
 int test_keys(uint64_t result) {
-  // FUnction is untested
+  // Function is untested
   long long first = idx_cand, last = idx_cand, MAX_IDX = table_size - 1;
   uint64_t skey1 = 0;
   uint64_t *pskey1 = &skey1;
-  printf("Test %d\n", counter++);
+  // printf("Test %d\n", counter++);
 
   if( first > 0 ) 
     while(first > 0 && middle[first - 1].result == result) first--;
