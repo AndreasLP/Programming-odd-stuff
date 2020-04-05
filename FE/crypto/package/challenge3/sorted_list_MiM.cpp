@@ -3,8 +3,22 @@
 #include<stdlib.h>
 #include<string.h>
 #include<inttypes.h>
+
+#ifdef __APPLE__
+#define __bswap_64(x)			\
+  ((((x) & 0xff00000000000000ull) >> 56)	\
+   | (((x) & 0x00ff000000000000ull) >> 40)	\
+   | (((x) & 0x0000ff0000000000ull) >> 24)	\
+   | (((x) & 0x000000ff00000000ull) >> 8)	\
+   | (((x) & 0x00000000ff000000ull) << 8)	\
+   | (((x) & 0x0000000000ff0000ull) << 24)	\
+   | (((x) & 0x000000000000ff00ull) << 40)	\
+   | (((x) & 0x00000000000000ffull) << 56))
+#else
 #include<byteswap.h>
-#include<endian.h>
+#endif
+
+// #include<endian.h>
 #include<time.h>
 #include<math.h>
 #include<algorithm>
@@ -47,7 +61,7 @@ long long bin_search(KEY_RES* arr, long size, long element);
 long long COUNT_DEPTH;
 long long bin_search_lin_inter(KEY_RES* arr, long size, long element);
 long long fibMonaccianSearch(KEY_RES* arr, long x, long n);
-long exponentialSearch(KEY_RES * arr, long n, long x);
+long long exponentialSearch(KEY_RES * arr, long n, long x);
 
 int test_keys(uint64_t result);
 int test_pair(void);
@@ -68,7 +82,7 @@ KEY_RES *middle;
 long long table_size, idx_cand;
 
 int main(int argc, char ** argv){
-  long COUNTER = 0;
+  long long COUNTER = 0;
   clock_t start_t, end_t; double total_t;
   uint64_t l=0,key1 = 0, key2 = 0, skey1 = 0, skey2 = 0,
            idx = 0,*pskey1 = &skey1, *pskey2 = &skey2;
@@ -121,7 +135,7 @@ int main(int argc, char ** argv){
     table_size = 1<<29;
     middle = (KEY_RES*)malloc( table_size *sizeof( KEY_RES ));
   }
-  printf("l: %2ld\tRounds: %ld\n", l, rounds);
+  printf("l: %2lld\tRounds: %lld\ntable_size: %lld\tlimit: %llu\n", l, rounds, table_size, limit);
   
   if(middle == NULL) {
     printf("Memory allocation failed\n");
@@ -136,13 +150,14 @@ int main(int argc, char ** argv){
   printf("Loop 1\n");
 #endif
 
-size_t i; uint64_t key1_limit;
-for(long round = 1; round <= rounds; round++) {
+unsigned long long i; uint64_t key1_limit;
+for(unsigned long long round = 1; round <= rounds; round++) {
 #ifdef timed
   start_t = clock();
 #endif
   
   key1_limit = round*table_size;
+  printf("round: %llu\tkey1_limit: %llu\n", round, key1_limit);
   for(i = 0; key1 < key1_limit; i++, key1++){
     skey1 = __bswap_64(parity(key1));
 
@@ -156,7 +171,7 @@ for(long round = 1; round <= rounds; round++) {
   #ifdef timed
     end_t = clock();
     total_t = ( (double)(end_t - start_t)) / CLOCKS_PER_SEC;
-    printf("Time key1: %5.3lf\nKeys tested: %lu\tKeys pr sec: %.3lf\n",
+    printf("Time key1: %5.3lf\nKeys tested: %llu\tKeys pr sec: %.3lf\n",
       total_t, table_size, (double)(table_size)/total_t);
   #endif
 
@@ -199,7 +214,7 @@ for(key2 = 0; key2 <= limit; key2++){
     if( idx_cand >= 0) {
       COUNTER++;
       if(test_keys(*idx_out) == 1) {
-        printf("Key 2: %016lx\n",bswap_64(*pskey2));
+        printf("Key 2: %016llx\n",__bswap_64(*pskey2));
         goto CLEANUP;
       };
     };
@@ -208,7 +223,7 @@ for(key2 = 0; key2 <= limit; key2++){
 #ifdef timed
   end_t = clock();
   total_t = ((double)(end_t - start_t))/CLOCKS_PER_SEC;
-  printf("Time key2: %5.3lf\nKeys tested: %zu\tKeys pr sec: %.3lf\n",
+  printf("Time key2: %5.3lf\nKeys tested: %llu\tKeys pr sec: %.3lf\n",
       total_t, limit, (double)(limit)/total_t);
 #endif
 
@@ -217,11 +232,11 @@ for(key2 = 0; key2 <= limit; key2++){
 
   CLEANUP:
 {
-  printf("Counter: %ld\n", COUNTER);
+  printf("Counter: %lld\n", COUNTER);
 #ifdef timed
   end_t = clock();
   total_t = ((double)(end_t - start_t))/CLOCKS_PER_SEC;
-  printf("Time key2: %5.3lf\nKeys tested: %zu\tKeys pr sec: %.3lf\n",
+  printf("Time key2: %5.3lf\nKeys tested: %llu\tKeys pr sec: %.3lf\n",
       total_t, key2-1, (double)(key2-1)/total_t);
 #endif
 
@@ -251,7 +266,7 @@ int test_keys(uint64_t result) {
     DES_set_key_unchecked((DES_cblock *)pskey1, pkeysch1);
     if(test_pair() == 1) {
 
-      printf("Key 1: %016lx\n",bswap_64(*pskey1));
+      printf("Key 1: %016llx\n",__bswap_64(*pskey1));
       return 1;
     };
 
@@ -283,8 +298,8 @@ int test_pair(void) {
   //DES_ecb_encrypt(&step1[0], &out[0], pkeysch2, 1);
   //if( 0!= memcmp(out[0], res[0], 8) ) return 0;
   
-  // printf("Key 1: %016lx\n",bswap_64(*pskey1));
-  // printf("Key 2: %016lx\n",bswap_64(*pskey2));
+  // printf("Key 1: %016lx\n",__bswap_64(*pskey1));
+  // printf("Key 2: %016lx\n",__bswap_64(*pskey2));
   return 1;
 
   // Old code. Does all encryption/decryption before comparing. 
@@ -310,8 +325,8 @@ int test_pair(void) {
 #ifdef debug
     printf("test_keys part 4\n");
 #endif    
-    printf("Key 1: %016lx\n",bswap_64(*pskey1));
-    printf("Key 2: %016lx\n",bswap_64(*pskey2));
+    printf("Key 1: %016lx\n",__bswap_64(*pskey1));
+    printf("Key 2: %016lx\n",__bswap_64(*pskey2));
     return 1;
   };
   return 0;
@@ -429,7 +444,7 @@ long long fibMonaccianSearch(KEY_RES* arr, long x, long n)
     return -1; 
 };
 long binarySearch(KEY_RES * arr, long l, long r, long x);
-long exponentialSearch(KEY_RES * arr, long n, long x)
+long long exponentialSearch(KEY_RES * arr, long n, long x)
 {
     // If x is present at firt location itself
     if (arr[0].result == x)
