@@ -103,22 +103,64 @@ bool spin() {
   op = inst >> 27;
 
   /* Execute MOVI-type instruction */
-  if (OP_MOVI == op) {
-    r = (inst >> 21) & 077;
-    i = (inst >>  5) & 0xffff;
-    s = (inst      ) & 037;
-    regs[r] = i << s;
+  switch (op) {
+    case OP_MOVI:
+      r = (inst >> 21) & 077;
+      i = (inst >>  5) & 0xffff;
+      s = (inst      ) & 037;
+      regs[r] = i << s;
+      break;
 
-  /* All other instructions follow the same format */
-  } else {
-    if (OP_HALT == op) {
+    case OP_HALT:
       fprintf(stderr, "HALTed\n");
       return false;
-    }
-    /* TODO: ... */
-  }
 
-  /* Keep running */
+    case OP_LOAD_B:
+      break;
+
+    case OP_LOAD_H:
+      break;
+
+    case OP_LOAD_W:
+      break;
+
+    case OP_STORE_B:
+      break;
+
+    case OP_STORE_H:
+      break;
+
+    case OP_STORE_W:
+      break;
+
+    case OP_ADD:
+      break;
+
+    case OP_MUL:
+      break;
+
+    case OP_DIV:
+      break;
+
+    case OP_NOR:
+      break;
+
+    case OP_CMOV:
+      break;
+
+    case OP_IN:
+      break;
+
+    case OP_OUT:
+      break;
+
+    case OP_READ:
+      break;
+
+    case OP_WRITE:
+      break;
+
+  }
   return true;
 }
 
