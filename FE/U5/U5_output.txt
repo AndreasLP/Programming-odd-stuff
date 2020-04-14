@@ -1,0 +1,9 @@
+start spin
+op	r	i	s	a	b	c
+[+] Loaded CORE.IMG
+>>> Power on self test (POST):
+  - cmov
+18	63	33264	0	63	32	31		97f03e00
+18	63	33264	0	63	32	31		97f03e00
+cmov error (should move)
+stop spin

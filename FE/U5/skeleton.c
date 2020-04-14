@@ -35,6 +35,14 @@ enum {
 typedef uint8_t  byte;
 typedef uint32_t word;
 
+void print_binary(word number)
+{
+    if (number) {
+        print_binary(number >> 1);
+        printf("%s", ((number & 1) ? "1" : "0"));
+    }
+}
+
 /* Machine state */
 static int disk;
 static byte mem[MEM_SIZE];
@@ -75,13 +83,37 @@ void disk_read(word addr, word sector) {
 
 static
 void disk_write(word addr, word sector) {
-  /* TODO: ... */
-}
+  ssize_t ret;
 
+  assert(addr % SECTOR_SIZE == 0 && "alignment error (write)");
+
+  disk_seek(sector);
+
+  ret = write(disk, &MEM(addr), SECTOR_SIZE);
+  switch (ret) {
+
+  case SECTOR_SIZE:
+    break;
+
+  case -1:
+    perror("write");
+    exit(EXIT_FAILURE);
+
+  default:
+    fprintf(stderr, "disk write error");
+    exit(EXIT_FAILURE);
+  }
+
+}
+int print_op = 0;
+#define ch_size 256
+char ch[ch_size] = { 0 };
+int ch_in = 0, ch_given = 0;
 static
 bool spin() {
-  word inst, pc;
-  unsigned int op, r, i, s;
+  word inst, pc, working_value = 0;
+  unsigned int op, r, i, s, a, b, c;
+  byte working_byte;
 
   pc = regs[REG_PC];
   assert(pc % 4 == 0 && "PC unaligned");
@@ -100,64 +132,218 @@ bool spin() {
   regs[REG_Z] = 0;
 
   /* Get the operation code */
+      r = (inst >> 21) & 077;
+      i = (inst >>  5) & 0xffff;
+      s = (inst      ) & 037;
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
   op = inst >> 27;
 
+  // if(print_op == 1) printf("%d, ", op);
+  
+  // printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\n", op, r, i, s, a, b, c);
+  // printf("%x\t%x\t%x\t%x\t%x\t%x\t%x\t\n", op, r, i, s, a, b, c);
+  // printf("%x\n", inst);
+  // printf("%d\n", op);
+  /*
+  fprintf(stdout, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 
+              a, b, c, regs[a], regs[b], regs[c], 
+              regs[b] + regs[c], working_value);
+  */
+  fflush(stdout);
   /* Execute MOVI-type instruction */
   switch (op) {
-    case OP_MOVI:
+    case OP_MOVI: // 16
       r = (inst >> 21) & 077;
       i = (inst >>  5) & 0xffff;
       s = (inst      ) & 037;
       regs[r] = i << s;
       break;
 
-    case OP_HALT:
+    case OP_HALT: // 31
+      fflush(stdout);
       fprintf(stderr, "HALTed\n");
       return false;
 
-    case OP_LOAD_B:
+    case OP_LOAD_B: // 0
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      regs[a] = (word) MEM(regs[b] + regs[c]);
       break;
 
-    case OP_LOAD_H:
+    case OP_LOAD_H: // 1
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      regs[a] = (word) (((word)MEM(regs[b] + regs[c])) << ((word) 8) |
+                        ((word)MEM(regs[b] + regs[c] + 1))   );
+      // printf("%x\t%x\t%x\n", regs[a], MEM(regs[b] + regs[c]), 
+      //                      MEM(regs[b] + regs[c] + 1));
       break;
 
-    case OP_LOAD_W:
+    case OP_LOAD_W: // 2
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      regs[a] = \
+        MEM(regs[b] + regs[c]    ) << 24 | \
+        MEM(regs[b] + regs[c] + 1) << 16 | \
+        MEM(regs[b] + regs[c] + 2) <<  8 | \
+        MEM(regs[b] + regs[c] + 3);
+      /*
+      printf("%x\t%x\t%x\t%x\t%x\n", regs[a], MEM(regs[b] + regs[c]), 
+                           MEM(regs[b] + regs[c] + 1), 
+                           MEM(regs[b] + regs[c] + 2), 
+                           MEM(regs[b] + regs[c] + 3));
+                           */
       break;
 
-    case OP_STORE_B:
+    case OP_STORE_B: // 4
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      working_byte = (byte) regs[a] & 0x000000ff;
+      // printf("%d\n", working_byte);
+      MEM(regs[b] + regs[c]) = working_byte;
       break;
 
-    case OP_STORE_H:
+    case OP_STORE_H: // 5
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      /*
+      working_value = ((word)(regs[b] + regs[c])) % ((word) 2);
+      if((regs[b] + regs[c]) % 2 != 0 || 1) {
+      fprintf(stderr, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 
+              a, b, c, regs[a], regs[b], regs[c], 
+              regs[b] + regs[c], working_value);
+      fflush(stderr);
+      };
+      */
+      assert((regs[b] + regs[c]) % 2 == 0 && "PC unaligned");
+      MEM(regs[b] + regs[c] + 1) = (byte) (regs[a] & 0xff);
+      MEM(regs[b] + regs[c]) = (byte) (regs[a] >> 8) & 0xff;
       break;
 
-    case OP_STORE_W:
+    case OP_STORE_W: // 6
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      /*
+      if((regs[b] + regs[c]) % 4 != 0) {
+      fprintf(stderr, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", 
+              a, b, c, regs[a], regs[b], regs[c], 
+              regs[b] + regs[c], (regs[b] + regs[c]) % 4);
+      fflush(stderr);
+      };
+      */
+      assert((regs[b] + regs[c]) % 4 == 0 && "PC unaligned");
+      MEM(regs[b] + regs[c]    ) = (byte) (regs[a] >> 24  & 0xff);
+      MEM(regs[b] + regs[c] + 1) = (byte) (regs[a] >> 16  & 0xff);
+      MEM(regs[b] + regs[c] + 2) = (byte) (regs[a] >>  8  & 0xff);
+      MEM(regs[b] + regs[c] + 3) = (byte) (regs[a]        & 0xff);
+      /*
+      printf("%x\t%x\t%x\t%x\t%x\n", regs[a], MEM(regs[b] + regs[c]), 
+                           MEM(regs[b] + regs[c] + 1), 
+                           MEM(regs[b] + regs[c] + 2), 
+                           MEM(regs[b] + regs[c] + 3));
+      printf("%x\t%x\t%x\t%x\t%x\n", regs[a], regs[a] >> 24 & 0xff, 
+                           regs[a] >> 16 & 0xff, 
+                           regs[a] >> 8 & 0xff, 
+                           regs[a] & 0xff); 
+      */
       break;
 
-    case OP_ADD:
+    case OP_ADD: // 8
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      // printf("%d\t%d\t%d\t%d\n", regs[a], regs[b], regs[c], working_value);
+      working_value = regs[b] + regs[c];
+      regs[a] = working_value;
+      // printf("%d\t%d\t%d\t%d\n", regs[a], regs[b], regs[c], working_value);
       break;
 
-    case OP_MUL:
+    case OP_MUL: // 9
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      regs[a] = regs[b] * regs[c];
       break;
 
-    case OP_DIV:
+    case OP_DIV: // 10
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      regs[a] = regs[b] / regs[c];
       break;
 
-    case OP_NOR:
+    case OP_NOR: // 11
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      regs[a] = ~(regs[b] | regs[c]);
       break;
 
-    case OP_CMOV:
+    case OP_CMOV: // 18
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      // printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t\t%x\n", op, r, i, s, a, b, c, inst);
+      if(regs[c] != 0) regs[a] = regs[b];
       break;
 
-    case OP_IN:
+    case OP_IN: // 24
+      print_op = 1;
+      // printf("\n");
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      // char ch[128] = { 0 };
+      // int i;
+      // scanf("%s", ch);
+      
+      if(ch_in == 0) {
+        char temp;
+        scanf("%[^\n]", ch);
+        scanf("%c", &temp);
+        int i = 0;
+        while(ch[i]) i++;
+        ch_in = i;
+        regs[a] = ch[ch_given++];
+        // printf("given: %s, %d\nregs[a]: %c\n", ch, ch_in, regs[a]);
+      } else if(ch_given == ch_in) {
+            ch_given = 0;
+            ch_in = 0;
+            for(int i = 0; i < ch_size; i++) ch[i] = 0;
+            regs[a] = 10;
+      } else {
+        regs[a] = ch[ch_given++];
+      }
+
       break;
 
-    case OP_OUT:
+    case OP_OUT: // 25
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      printf("%c", (byte) regs[a] & 0xff);
       break;
 
-    case OP_READ:
+    case OP_READ: // 26
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      disk_read(regs[a], regs[b]);
       break;
 
-    case OP_WRITE:
+    case OP_WRITE: // 27
+      a = (inst >> 21) & 077;
+      b = (inst >> 15) & 077;
+      c = (inst >>  9) & 077;
+      disk_write(regs[a], regs[b]);
       break;
 
   }
@@ -175,9 +361,11 @@ int main(int argc, char *argv[]) {
     perror("open");
     return EXIT_FAILURE;
   }
+  printf("start spin\nop\tr\ti\ts\ta\tb\tc\n");
 
   disk_read(0, 0);
   while (spin());
+  printf("stop spin\n");
 
   close(disk);
 

@@ -1,32 +1,37 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#define byte uint8_t
+void print_binary(uint8_t number)
+{
+    if (number) {
+        print_binary(number >> 1);
+        printf("%s", ((number & 1) ? "1" : "0"));
+    } 
+}
 
 int main(int argc, char** argv) {
-  int t = 2;
-  if(argc > 1) t = atoi(argv[1]);
+    byte val1 = 0x9d, val2 = 0xe1;
+    print_binary(val1); printf("\n");
+    print_binary(val2); printf("\n");
+    print_binary(val1 | val2); printf("\n");
+    print_binary(val1 & val2); printf("\n");
+    print_binary(~(val1 | val2)); printf("\n");
+    char ch[20] = { 0 };
+    for( int i = 0; i < 20; i++) printf("%d, ", ch[i]);
+    printf("\n");
+    for( int i = 0; i < 20; i++) printf("%c, ", ch[i]);
+    printf("\n");
+    scanf("%s", ch);
+    for( int i = 0; i < 20; i++) printf("%d, ", ch[i]);
+    printf("\n");
+    for( int i = 0; i < 20; i++) printf("%c, ", ch[i]);
+    printf("\n");
+    printf("%s\n", ch);
 
-  if(t == 0) printf("t: 0\n", t);
-  else if(t == 1) printf("t: 1\n", t);
-  else if(t == 2) printf("t: 2\n", t);
-  else printf("t: other\n", t);
-
-  switch (t) {
-  case 0:
-    printf("0\n");
-    break;
-  
-  case 1:
-    printf("1\n");
-    break;
-  
-  case 2:
-    printf("2\n");
-    break;
-  
-  default:
-    printf("other\n");
-  }
 
   return 0;
 };
